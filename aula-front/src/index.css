@@ -1,0 +1,55 @@
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+/*
+  Paleta derivada do logo (silhueta de carro em linha, gota d'água,
+  gradiente azul-marinho -> ciano). brand-ink é o texto/base escura,
+  brand/brand-dark cobrem ações e estados ativos, brand-cyan é o
+  destaque (brilho/gota), brand-surface e brand-card formam o fundo
+  "água limpa" em vez de branco/cinza puros.
+*/
+@theme {
+  --color-brand-ink: #0b1e38;
+  --color-brand: #1d5fd1;
+  --color-brand-dark: #123a86;
+  --color-brand-cyan: #38c6e8;
+  --color-brand-surface: #f2f7fb;
+  --color-brand-card: #ffffff;
+  --color-brand-line: #dbe6f0;
+
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+    color: var(--color-brand-ink);
+    background-color: var(--color-brand-surface);
+  }
+
+  body {
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-cyan);
+    color: var(--color-brand-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-cyan);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
