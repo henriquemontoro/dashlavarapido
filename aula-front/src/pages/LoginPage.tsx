@@ -7,26 +7,32 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import type { AuthUser } from "@/types/auth"
+
+function roleHome(role: AuthUser["role"]) {
+  return role === "owner" ? "/dashboard" : "/atendimentos"
+}
 
 export function LoginPage() {
-  const { login, isAuthenticated, isLoading } = useAuth()
+  const { login, user, isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  if (!isLoading && isAuthenticated) {
+  if (!isLoading && isAuthenticated && user) {
     const from = (location.state as { from?: { pathname: string } } | null)?.from
-    return <Navigate to={from?.pathname ?? "/"} replace />
+    return <Navigate to={from?.pathname ?? roleHome(user.role)} replace />
   }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setIsSubmitting(true)
     try {
-      await login(email, password)
-      navigate("/", { replace: true })
+      const me = await login(email, password)
+      const from = (location.state as { from?: { pathname: string } } | null)?.from
+      navigate(from?.pathname ?? roleHome(me.role), { replace: true })
     } catch (error) {
       toast.error(error instanceof ApiError ? error.message : "Não foi possível entrar")
     } finally {

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
-import { NavLink } from "react-router-dom"
+import { Link, NavLink } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
+import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const roleLabel: Record<string, string> = {
@@ -39,9 +40,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             />
             <div>
               <p className="font-display text-lg font-semibold uppercase tracking-wide text-brand-ink">
-                Lava-Rápido Nogueira
+                Bem-vindo ao Portal Nogueira
               </p>
-              <p className="text-xs text-brand-ink/60">Painel operacional</p>
+              <p className="text-xs text-brand-ink/60">Lava-Rápido Nogueira</p>
             </div>
           </div>
           {user && (
@@ -57,6 +58,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <p className="text-sm font-medium text-brand-ink">{user.name}</p>
                 <p className="text-xs text-brand-ink/60">{roleLabel[user.role]}</p>
               </div>
+              <Link to="/" className={buttonVariants({ variant: "ghost", size: "sm", className: "w-fit" })}>
+                Site institucional
+              </Link>
               <button
                 type="button"
                 onClick={logout}
