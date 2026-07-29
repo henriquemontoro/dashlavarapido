@@ -49,9 +49,10 @@ export function LoginPage() {
             alt="Lava-Rápido Nogueira"
             className="mb-2 h-16 w-16 rounded-full object-cover"
           />
-          <CardTitle className="normal-case tracking-normal text-base text-brand-ink">
-            Entrar no painel
+          <CardTitle className="normal-case tracking-normal text-lg text-brand-ink">
+            Bem-vindo ao Portal Nogueira
           </CardTitle>
+          <p className="text-sm text-brand-ink/60">Entre com seu e-mail e senha para continuar</p>
         </CardHeader>
         <CardContent>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
