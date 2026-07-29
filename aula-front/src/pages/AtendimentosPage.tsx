@@ -9,6 +9,7 @@ import type { Cliente } from "@/types/cliente"
 export function AtendimentosPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null)
 
   const loadClientes = useCallback(async () => {
     try {
@@ -37,12 +38,19 @@ export function AtendimentosPage() {
           </p>
         </div>
 
-        <ClienteForm onCreated={loadClientes} />
+        <ClienteForm
+          cliente={editingCliente}
+          onSaved={() => {
+            setEditingCliente(null)
+            loadClientes()
+          }}
+          onCancelEdit={() => setEditingCliente(null)}
+        />
 
         {isLoading ? (
           <p className="text-sm text-brand-ink/50">Carregando clientes...</p>
         ) : (
-          <ClienteTable clientes={clientes} onChange={loadClientes} />
+          <ClienteTable clientes={clientes} onChange={loadClientes} onEdit={setEditingCliente} />
         )}
       </div>
     </AppShell>

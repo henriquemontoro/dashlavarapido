@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { api, ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -9,28 +9,60 @@ import type { Cliente } from "@/types/cliente"
 
 const emptyForm = { nome: "", sobrenome: "", telefone: "", modelo_carro: "" }
 
-export function ClienteForm({ onCreated }: { onCreated: () => void }) {
+interface ClienteFormProps {
+  cliente?: Cliente | null
+  onSaved: () => void
+  onCancelEdit?: () => void
+}
+
+export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps) {
+  const isEditing = cliente != null
   const [isOpen, setIsOpen] = useState(false)
   const [form, setForm] = useState(emptyForm)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (cliente) {
+      setForm({
+        nome: cliente.nome,
+        sobrenome: cliente.sobrenome,
+        telefone: cliente.telefone,
+        modelo_carro: cliente.modelo_carro,
+      })
+    }
+  }, [cliente])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setIsSubmitting(true)
     try {
-      await api.post<Cliente>("/clientes", form)
-      toast.success("Cliente cadastrado")
-      setForm(emptyForm)
-      setIsOpen(false)
-      onCreated()
+      if (isEditing && cliente) {
+        await api.put<Cliente>(`/clientes/${cliente.id}`, form)
+        toast.success("Cliente atualizado")
+      } else {
+        await api.post<Cliente>("/clientes", form)
+        toast.success("Cliente cadastrado")
+        setForm(emptyForm)
+        setIsOpen(false)
+      }
+      onSaved()
     } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : "Não foi possível cadastrar o cliente")
+      toast.error(error instanceof ApiError ? error.message : "Não foi possível salvar o cliente")
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  if (!isOpen) {
+  function handleCancel() {
+    if (isEditing) {
+      onCancelEdit?.()
+    } else {
+      setIsOpen(false)
+      setForm(emptyForm)
+    }
+  }
+
+  if (!isEditing && !isOpen) {
     return (
       <Button variant="outline" size="sm" className="w-fit" onClick={() => setIsOpen(true)}>
         + Novo cliente
@@ -81,18 +113,9 @@ export function ClienteForm({ onCreated }: { onCreated: () => void }) {
           </div>
           <div className="flex gap-2 sm:col-span-2">
             <Button type="submit" size="sm" className="w-fit" disabled={isSubmitting}>
-              {isSubmitting ? "Salvando..." : "Salvar cliente"}
+              {isSubmitting ? "Salvando..." : isEditing ? "Salvar alterações" : "Salvar cliente"}
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="w-fit"
-              onClick={() => {
-                setIsOpen(false)
-                setForm(emptyForm)
-              }}
-            >
+            <Button type="button" variant="ghost" size="sm" className="w-fit" onClick={handleCancel}>
               Cancelar
             </Button>
           </div>
