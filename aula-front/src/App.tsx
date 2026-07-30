@@ -9,6 +9,7 @@ import { ResetPasswordPage } from "@/pages/ResetPasswordPage"
 import { TermoPage } from "@/pages/TermoPage"
 import { DashboardPage } from "@/pages/DashboardPage"
 import { AtendimentosPage } from "@/pages/AtendimentosPage"
+import { AssistentePage } from "@/pages/AssistentePage"
 import { UsersPage } from "@/pages/UsersPage"
 import { TermosPage } from "@/pages/TermosPage"
 import { HomePage } from "@/pages/HomePage"
@@ -35,6 +36,7 @@ function App() {
             <Route element={<RequireRole roles={["owner", "employee"]} />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/atendimentos" element={<AtendimentosPage />} />
+              <Route path="/assistente" element={<AssistentePage />} />
             </Route>
           </Route>
           <Route path="*" element={<NotFoundPage />} />
