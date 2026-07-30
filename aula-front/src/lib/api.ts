@@ -23,6 +23,8 @@ export class ApiError extends Error {
   }
 }
 
+export const AUTH_UNAUTHORIZED_EVENT = "auth:unauthorized"
+
 async function authenticatedFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken()
   const headers = new Headers(options.headers)
@@ -32,6 +34,16 @@ async function authenticatedFetch(path: string, options: RequestInit = {}): Prom
 
   if (!response.ok) {
     const body = await response.json().catch(() => null)
+
+    // Token expirado/inválido numa chamada autenticada: derruba a sessão em vez de
+    // deixar a mensagem crua do backend aparecer (login com senha errada não entra aqui,
+    // pois não tem token e não passa por essa checagem).
+    if (response.status === 401 && token && path !== "/auth/login") {
+      clearToken()
+      window.dispatchEvent(new Event(AUTH_UNAUTHORIZED_EVENT))
+      throw new ApiError(response.status, "Sessão expirada. Faça login novamente.")
+    }
+
     throw new ApiError(response.status, body?.detail ?? "Erro inesperado")
   }
 
@@ -57,6 +69,11 @@ export const api = {
   put: <T>(path: string, body?: unknown) =>
     request<T>(path, {
       method: "PUT",
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    }),
+  patch: <T>(path: string, body?: unknown) =>
+    request<T>(path, {
+      method: "PATCH",
       body: body !== undefined ? JSON.stringify(body) : undefined,
     }),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),

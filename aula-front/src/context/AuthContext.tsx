@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { api, clearToken, getToken, setToken as persistToken } from "@/lib/api"
+import { AUTH_UNAUTHORIZED_EVENT, api, clearToken, getToken, setToken as persistToken } from "@/lib/api"
 import type { AuthUser, LoginResponse } from "@/types/auth"
 
 interface AuthContextValue {
@@ -32,6 +32,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     rehydrate()
+  }, [])
+
+  useEffect(() => {
+    function handleUnauthorized() {
+      setUser(null)
+    }
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized)
+    return () => window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized)
   }, [])
 
   async function login(email: string, password: string) {

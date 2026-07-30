@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { Modal } from "@/components/ui/modal"
 import { api, ApiError } from "@/lib/api"
+import { parseApiDate } from "@/lib/parseApiDate"
 
 interface FotoMetadata {
   id: number
@@ -78,7 +79,7 @@ export function PhotoViewerModal({ open, onClose, atendimentoId, momento, title 
             <div key={foto.id} className="flex flex-col gap-1 overflow-hidden rounded-md border border-brand-line">
               <img src={foto.previewUrl} alt="" className="aspect-square w-full object-cover" />
               <div className="px-2 pb-2 text-xs text-brand-ink/60">
-                <p>{new Date(foto.registrada_em).toLocaleString("pt-BR")}</p>
+                <p>{parseApiDate(foto.registrada_em).toLocaleString("pt-BR")}</p>
                 {foto.registrada_por && <p>Por {foto.registrada_por}</p>}
               </div>
             </div>

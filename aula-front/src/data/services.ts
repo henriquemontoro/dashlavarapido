@@ -99,3 +99,43 @@ export const services: Service[] = [
     description: "Aplicação de impermeabilizante para aumentar a proteção dos estofados contra líquidos e sujeiras.",
   },
 ]
+
+// Fonte única dos nomes de serviço usados no checklist de atendimento
+// (cadastro de cliente e progresso do Portal Nogueira).
+export const SERVICE_NAMES: string[] = services.map((service) => service.title)
+
+// Tempo esperado (minutos) por serviço — usado tanto pra saber o tamanho da
+// contagem regressiva quanto pra colorir o timer quando estoura o previsto.
+// Estimativa inicial, ajustável.
+export const SERVICE_EXPECTED_MINUTES: Record<string, number> = {
+  "Lavagem Simples": 15,
+  "Lavagem Completa": 30,
+  "Lavagem de Motor": 15,
+  "Aspiração Interna": 10,
+  Secagem: 10,
+  Enceramento: 20,
+  Polimento: 30,
+  "Higienização Interna": 25,
+  "Hidratação de Couro": 15,
+  "Limpeza de Rodas e Pneus": 10,
+  "Limpeza de Vidros": 10,
+  "Impermeabilização de Bancos": 15,
+}
+
+// Ordem operacional de execução dos serviços (não é a ordem de exibição dos
+// cards do site institucional). Define qual serviço "é a vez" no checklist:
+// os timers rodam um de cada vez, nessa sequência, não todos juntos.
+export const SERVICE_ORDER: string[] = [
+  "Lavagem Simples",
+  "Lavagem Completa",
+  "Lavagem de Motor",
+  "Limpeza de Rodas e Pneus",
+  "Secagem",
+  "Aspiração Interna",
+  "Higienização Interna",
+  "Limpeza de Vidros",
+  "Hidratação de Couro",
+  "Impermeabilização de Bancos",
+  "Polimento",
+  "Enceramento",
+]

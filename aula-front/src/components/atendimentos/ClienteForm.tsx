@@ -5,9 +5,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { SERVICE_EXPECTED_MINUTES, SERVICE_NAMES } from "@/data/services"
+import { cn } from "@/lib/utils"
 import type { Cliente } from "@/types/cliente"
 
-const emptyForm = { nome: "", sobrenome: "", telefone: "", modelo_carro: "", placa: "" }
+const emptyForm = {
+  nome: "",
+  sobrenome: "",
+  telefone: "",
+  modelo_carro: "",
+  placa: "",
+  cor_carro: "",
+  servicos: [] as string[],
+}
 
 interface ClienteFormProps {
   cliente?: Cliente | null
@@ -29,9 +39,20 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
         telefone: cliente.telefone,
         modelo_carro: cliente.modelo_carro,
         placa: cliente.placa ?? "",
+        cor_carro: cliente.cor_carro ?? "",
+        servicos: cliente.servicos,
       })
     }
   }, [cliente])
+
+  function toggleServico(servico: string) {
+    setForm((prev) => ({
+      ...prev,
+      servicos: prev.servicos.includes(servico)
+        ? prev.servicos.filter((item) => item !== servico)
+        : [...prev.servicos, servico],
+    }))
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -76,7 +97,9 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
       <CardContent className="pt-5">
         <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="nome">Nome</Label>
+            <Label htmlFor="nome">
+              Nome <span className="text-red-600">*</span>
+            </Label>
             <Input
               id="nome"
               required
@@ -94,7 +117,9 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="telefone">Telefone</Label>
+            <Label htmlFor="telefone">
+              Telefone <span className="text-red-600">*</span>
+            </Label>
             <Input
               id="telefone"
               required
@@ -113,7 +138,9 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="placa">Placa</Label>
+            <Label htmlFor="placa">
+              Placa <span className="text-red-600">*</span>
+            </Label>
             <Input
               id="placa"
               required
@@ -121,6 +148,38 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
               value={form.placa}
               onChange={(event) => setForm({ ...form, placa: event.target.value.toUpperCase() })}
             />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="cor_carro">Cor do carro</Label>
+            <Input
+              id="cor_carro"
+              required
+              value={form.cor_carro}
+              onChange={(event) => setForm({ ...form, cor_carro: event.target.value })}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
+            <Label>Serviços</Label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {SERVICE_NAMES.map((servico) => (
+                <label
+                  key={servico}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-2 rounded-md border border-brand-line px-2.5 py-1.5 text-sm text-brand-ink/80",
+                    form.servicos.includes(servico) && "border-brand-cyan bg-brand-cyan/10 text-brand-ink",
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    className="accent-brand-cyan"
+                    checked={form.servicos.includes(servico)}
+                    onChange={() => toggleServico(servico)}
+                  />
+                  {servico}{" "}
+                  <span className="text-brand-ink/40">({SERVICE_EXPECTED_MINUTES[servico] ?? 20}min)</span>
+                </label>
+              ))}
+            </div>
           </div>
           <div className="flex gap-2 sm:col-span-2">
             <Button type="submit" size="sm" className="w-fit" disabled={isSubmitting}>
