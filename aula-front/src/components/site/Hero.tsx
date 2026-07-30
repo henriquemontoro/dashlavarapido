@@ -31,7 +31,7 @@ export function Hero() {
               rel="noreferrer"
               className={cn(buttonVariants({ variant: "primary", size: "default" }), "w-fit px-6")}
             >
-              Agendar pelo WhatsApp
+              Fale conosco
             </a>
             <a href="#servicos" className="inline-flex items-center gap-1.5 text-sm font-medium text-white/80 hover:text-white">
               <Sparkle size={16} weight="fill" />
