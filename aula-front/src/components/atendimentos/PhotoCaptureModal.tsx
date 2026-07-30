@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useRef, useState, type ReactNode } from "react"
 import { Camera, Trash, X } from "@phosphor-icons/react"
 import toast from "react-hot-toast"
 import { Modal } from "@/components/ui/modal"
@@ -12,7 +12,7 @@ interface CapturedPhoto {
 
 interface PhotoCaptureModalProps {
   open: boolean
-  title: string
+  title: ReactNode
   onClose: () => void
   onConfirm: (files: File[]) => Promise<void>
 }

@@ -253,24 +253,45 @@ export function ClienteTable({
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    aria-label={`Editar ${cliente.nome}`}
-                    className="rounded-md p-1.5 text-brand-ink/50 transition-colors hover:bg-brand-surface hover:text-brand-ink"
-                    onClick={() => onEdit(cliente)}
-                  >
-                    <PencilSimple size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Excluir ${cliente.nome}`}
-                    className="rounded-md p-1.5 text-brand-ink/50 transition-colors hover:bg-brand-surface hover:text-red-600"
-                    onClick={() => setConfirmingId(cliente.id)}
-                  >
-                    <Trash size={16} />
-                  </button>
-                </div>
+                {confirmingId === cliente.id ? (
+                  <div className="flex shrink-0 items-center gap-2 whitespace-nowrap text-xs">
+                    <span className="text-brand-ink/60">Excluir?</span>
+                    <button
+                      type="button"
+                      disabled={pendingId === cliente.id}
+                      className="font-medium text-red-600 hover:underline disabled:opacity-50"
+                      onClick={() => excluir(cliente)}
+                    >
+                      Confirmar
+                    </button>
+                    <button
+                      type="button"
+                      className="text-brand-ink/60 hover:underline"
+                      onClick={() => setConfirmingId(null)}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      aria-label={`Editar ${cliente.nome}`}
+                      className="rounded-md p-1.5 text-brand-ink/50 transition-colors hover:bg-brand-surface hover:text-brand-ink"
+                      onClick={() => onEdit(cliente)}
+                    >
+                      <PencilSimple size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Excluir ${cliente.nome}`}
+                      className="rounded-md p-1.5 text-brand-ink/50 transition-colors hover:bg-brand-surface hover:text-red-600"
+                      onClick={() => setConfirmingId(cliente.id)}
+                    >
+                      <Trash size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5">
@@ -360,36 +381,15 @@ export function ClienteTable({
               )}
 
               <div className="mt-auto flex flex-col gap-2 pt-1">
-                {confirmingId === cliente.id ? (
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-brand-ink/60">Excluir cliente?</span>
-                    <button
-                      type="button"
-                      disabled={pendingId === cliente.id}
-                      className="font-medium text-red-600 hover:underline disabled:opacity-50"
-                      onClick={() => excluir(cliente)}
-                    >
-                      Confirmar
-                    </button>
-                    <button
-                      type="button"
-                      className="text-brand-ink/60 hover:underline"
-                      onClick={() => setConfirmingId(null)}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                ) : (
-                  <Button
-                    size="default"
-                    className="w-full"
-                    variant={emAndamento ? "primary" : "outline"}
-                    disabled={pendingId === cliente.id || bloqueadoPorServicos || bloqueadoPorTermo}
-                    onClick={() => setCaptureState({ cliente, mode: emAndamento ? "finalizar" : "iniciar" })}
-                  >
-                    {emAndamento ? "Finalizar atendimento" : "Iniciar atendimento"}
-                  </Button>
-                )}
+                <Button
+                  size="default"
+                  className="w-full"
+                  variant={emAndamento ? "primary" : "outline"}
+                  disabled={pendingId === cliente.id || bloqueadoPorServicos || bloqueadoPorTermo}
+                  onClick={() => setCaptureState({ cliente, mode: emAndamento ? "finalizar" : "iniciar" })}
+                >
+                  {emAndamento ? "Finalizar atendimento" : "Iniciar atendimento"}
+                </Button>
 
                 {tempoGrandeMs != null && (
                   <div
@@ -461,7 +461,12 @@ export function ClienteTable({
 
       <PhotoCaptureModal
         open={captureState !== null}
-        title={captureState?.mode === "finalizar" ? "Fotos do carro — finalização *" : "Fotos do carro — início *"}
+        title={
+          <>
+            {captureState?.mode === "finalizar" ? "Fotos do carro — finalização" : "Fotos do carro — início"}{" "}
+            <span className="text-red-600">*</span>
+          </>
+        }
         onClose={() => setCaptureState(null)}
         onConfirm={handleCaptureConfirm}
       />

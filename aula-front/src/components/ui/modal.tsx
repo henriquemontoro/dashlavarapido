@@ -4,7 +4,7 @@ import { X } from "@phosphor-icons/react"
 interface ModalProps {
   open: boolean
   onClose: () => void
-  title: string
+  title: ReactNode
   children: ReactNode
 }
 

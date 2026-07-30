@@ -56,6 +56,10 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    if (form.servicos.length === 0) {
+      toast.error("Selecione ao menos um serviço")
+      return
+    }
     setIsSubmitting(true)
     try {
       if (isEditing && cliente) {
@@ -111,7 +115,6 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
             <Label htmlFor="sobrenome">Sobrenome</Label>
             <Input
               id="sobrenome"
-              required
               value={form.sobrenome}
               onChange={(event) => setForm({ ...form, sobrenome: event.target.value })}
             />
@@ -132,7 +135,6 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
             <Label htmlFor="modelo_carro">Modelo do carro</Label>
             <Input
               id="modelo_carro"
-              required
               value={form.modelo_carro}
               onChange={(event) => setForm({ ...form, modelo_carro: event.target.value })}
             />
@@ -153,13 +155,14 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
             <Label htmlFor="cor_carro">Cor do carro</Label>
             <Input
               id="cor_carro"
-              required
               value={form.cor_carro}
               onChange={(event) => setForm({ ...form, cor_carro: event.target.value })}
             />
           </div>
           <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <Label>Serviços</Label>
+            <Label>
+              Serviços <span className="text-red-600">*</span>
+            </Label>
             <div className="grid gap-2 sm:grid-cols-3">
               {SERVICE_NAMES.map((servico) => (
                 <label

@@ -93,7 +93,9 @@ export function TermoPage() {
           ) : (
             <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="atendimento">Selecione o seu nome</Label>
+                <Label htmlFor="atendimento">
+                  Selecione o seu nome <span className="text-red-600">*</span>
+                </Label>
                 <select
                   id="atendimento"
                   required
@@ -121,7 +123,9 @@ export function TermoPage() {
               )}
 
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="cpf">CPF</Label>
+                <Label htmlFor="cpf">
+                  CPF <span className="text-red-600">*</span>
+                </Label>
                 <Input
                   id="cpf"
                   required
@@ -132,7 +136,9 @@ export function TermoPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Possui plano de assinatura?</Label>
+                <Label>
+                  Possui plano de assinatura? <span className="text-red-600">*</span>
+                </Label>
                 <div className="flex gap-4 text-sm text-brand-ink/80">
                   <label className="flex cursor-pointer items-center gap-1.5">
                     <input
