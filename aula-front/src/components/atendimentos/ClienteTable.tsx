@@ -396,6 +396,7 @@ export function ClienteTable({
                             {grupo.pacote}
                           </p>
                         )}
+                        <div className="grid grid-cols-2 gap-1.5">
                         {grupo.itens.map(({ etapa, item }) => {
                           const isClickable = emAndamento && (item.concluido || item.isCurrent)
 
@@ -445,6 +446,7 @@ export function ClienteTable({
                             </button>
                           )
                         })}
+                        </div>
                       </div>
                     ))}
                   </div>

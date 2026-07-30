@@ -18,7 +18,7 @@ export function PlansPage() {
             Assinatura para quem lava sempre
           </h1>
           <p className="mt-3 text-brand-ink/60">
-            Lavagens Completas e Ceras inclusas todo mês, sem precisar pagar a cada visita. O saldo
+            Lavagens Completas e Enceramentos inclusos todo mês, sem precisar pagar a cada visita. O saldo
             renova a cada ciclo de 30 dias.
           </p>
         </div>
@@ -30,7 +30,7 @@ export function PlansPage() {
         </div>
 
         <p className="mt-6 text-xs text-brand-ink/50">
-          Os planos contemplam apenas Lavagem Completa e Cera. Demais serviços do catálogo
+          Os planos contemplam apenas Lavagem Completa e Enceramento. Demais serviços do catálogo
           (Lavagem Simples, Lavagem de Motor, Polimento e Higienização de Bancos) são sempre
           cobrados à parte, mesmo para assinantes.
         </p>

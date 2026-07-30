@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { Hero } from "@/components/site/Hero"
 import { ServicesSection } from "@/components/site/ServicesSection"
+import { ServicesPriceTable } from "@/components/site/ServicesPriceTable"
 import { TrustStrip } from "@/components/site/TrustStrip"
 import { ContactSection } from "@/components/site/ContactSection"
 import { SiteFooter } from "@/components/site/SiteFooter"
@@ -29,6 +30,7 @@ export function HomePage() {
       <Hero />
       <TrustStrip />
       <ServicesSection />
+      <ServicesPriceTable />
       <ContactSection />
       <SiteFooter />
     </div>

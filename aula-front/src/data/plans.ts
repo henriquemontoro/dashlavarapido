@@ -1,5 +1,5 @@
 // Planos de assinatura reais do Lava-Rápido Nogueira (POP-OPE-001). Contemplam
-// exclusivamente Lavagem Completa e Cera — os demais serviços do catálogo
+// exclusivamente Lavagem Completa e Enceramento — os demais serviços do catálogo
 // nunca entram em nenhum plano, sempre cobrados avulso (nota única na
 // página de planos, não repetida em cada card).
 export interface PlanoServico {
@@ -14,10 +14,10 @@ export interface Plan {
   servicos: PlanoServico[]
 }
 
-function montarServicos(lavagensCompletas: number, ceras: number): PlanoServico[] {
+function montarServicos(lavagensCompletas: number, enceramentos: number): PlanoServico[] {
   return [
     { nome: "Lavagem Completa", quantidade: lavagensCompletas },
-    { nome: "Cera", quantidade: ceras },
+    { nome: "Enceramento", quantidade: enceramentos },
   ]
 }
 

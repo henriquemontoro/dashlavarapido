@@ -50,7 +50,7 @@ export const SERVICE_CATALOG: ServiceOffering[] = [
     ],
   },
   { title: "Polimento", minutes: 240, price: 500 },
-  { title: "Cera", minutes: 20, price: 30 },
+  { title: "Enceramento", minutes: 20, price: 30 },
   { title: "Higienização do Couro", minutes: 120, price: 75 },
   { title: "Higienização do Tecido", minutes: 100, price: 50 },
 ]
@@ -134,7 +134,7 @@ export const services: Service[] = [
   {
     icon: Sparkle,
     image: "/services/enceramento-cristalizacao.jpg",
-    title: "Cera",
+    title: "Enceramento",
     description: "Aplicação de cera automotiva para proporcionar brilho e proteção temporária da pintura.",
   },
   {
