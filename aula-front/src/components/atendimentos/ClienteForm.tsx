@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { SERVICE_EXPECTED_MINUTES, SERVICE_NAMES } from "@/data/services"
+import { SERVICE_CATALOG } from "@/data/services"
 import { cn } from "@/lib/utils"
+import { formatBRL } from "@/lib/formatCurrency"
 import type { Cliente } from "@/types/cliente"
 
 const emptyForm = {
@@ -163,23 +164,25 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
             <Label>
               Serviços <span className="text-red-600">*</span>
             </Label>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {SERVICE_NAMES.map((servico) => (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {SERVICE_CATALOG.map((service) => (
                 <label
-                  key={servico}
+                  key={service.title}
                   className={cn(
                     "flex cursor-pointer items-center gap-2 rounded-md border border-brand-line px-2.5 py-1.5 text-sm text-brand-ink/80",
-                    form.servicos.includes(servico) && "border-brand-cyan bg-brand-cyan/10 text-brand-ink",
+                    form.servicos.includes(service.title) && "border-brand-cyan bg-brand-cyan/10 text-brand-ink",
                   )}
                 >
                   <input
                     type="checkbox"
                     className="accent-brand-cyan"
-                    checked={form.servicos.includes(servico)}
-                    onChange={() => toggleServico(servico)}
+                    checked={form.servicos.includes(service.title)}
+                    onChange={() => toggleServico(service.title)}
                   />
-                  {servico}{" "}
-                  <span className="text-brand-ink/40">({SERVICE_EXPECTED_MINUTES[servico] ?? 20}min)</span>
+                  <span className="flex-1">{service.title}</span>
+                  <span className="text-xs text-brand-ink/40">
+                    {service.minutes}min · {formatBRL(service.price)}
+                  </span>
                 </label>
               ))}
             </div>

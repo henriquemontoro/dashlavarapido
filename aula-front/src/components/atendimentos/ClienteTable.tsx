@@ -5,8 +5,9 @@ import { api, ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { SERVICE_EXPECTED_MINUTES, SERVICE_ORDER } from "@/data/services"
+import { getServiceOrderIndex, getStepExpectedMinutes } from "@/data/services"
 import { formatDuration } from "@/lib/formatDuration"
+import { formatBRL } from "@/lib/formatCurrency"
 import { parseApiDate } from "@/lib/parseApiDate"
 import type { Cliente, ServicoStatus } from "@/types/cliente"
 import { PhotoCaptureModal } from "@/components/atendimentos/PhotoCaptureModal"
@@ -37,19 +38,17 @@ interface ServicoTimelineItem extends ServicoBase {
   elapsedMs: number | null
 }
 
-// Serviços rodam UM DE CADA VEZ, na ordem operacional (SERVICE_ORDER), não
-// todos ao mesmo tempo: o timer do próximo só começa quando o anterior é
-// marcado como concluído. Retorna a lista com o tempo de cada um e, se todos
-// já foram concluídos, o instante em que o último terminou (pra congelar o
-// "tempo total" do atendimento nesse ponto, sem continuar contando).
+// Serviços rodam UM DE CADA VEZ, na ordem em que o backend já os entrega
+// (etapas expandidas na ordem operacional do catálogo, ver
+// servicos_catalogo.py), não todos ao mesmo tempo: o timer do próximo só
+// começa quando o anterior é marcado como concluído. Retorna a lista com o
+// tempo de cada um e, se todos já foram concluídos, o instante em que o
+// último terminou (pra congelar o "tempo total" do atendimento nesse ponto).
 function buildServicoTimeline(servicos: ServicoBase[], iniciadoEmMs: number | null, now: number) {
-  const ordenados = [...servicos].sort(
-    (a, b) => SERVICE_ORDER.indexOf(a.servico) - SERVICE_ORDER.indexOf(b.servico),
-  )
-  const currentIndex = ordenados.findIndex((item) => !item.concluido)
+  const currentIndex = servicos.findIndex((item) => !item.concluido)
   let cursorMs = iniciadoEmMs
 
-  const itens: ServicoTimelineItem[] = ordenados.map((item, index) => {
+  const itens: ServicoTimelineItem[] = servicos.map((item, index) => {
     const isCurrent = index === currentIndex
     const isFuture = currentIndex !== -1 && index > currentIndex
     const startMs = cursorMs
@@ -66,7 +65,7 @@ function buildServicoTimeline(servicos: ServicoBase[], iniciadoEmMs: number | nu
     return { ...item, isCurrent, isFuture, elapsedMs }
   })
 
-  const todosConcluidos = ordenados.length > 0 && currentIndex === -1
+  const todosConcluidos = servicos.length > 0 && currentIndex === -1
   return { itens, tempoTotalCongeladoEm: todosConcluidos ? cursorMs : null }
 }
 
@@ -233,15 +232,17 @@ export function ClienteTable({
           : null
         const temTimer = iniciadoEmMs != null && !isAguardando
 
-        const previewServicos: ServicoTimelineItem[] = cliente.servicos.map((servico, index) => ({
-          id: -1 - index,
-          servico,
-          concluido: false,
-          concluido_em: null,
-          isCurrent: false,
-          isFuture: false,
-          elapsedMs: null,
-        }))
+        const previewServicos: ServicoTimelineItem[] = [...cliente.servicos]
+          .sort((a, b) => getServiceOrderIndex(a) - getServiceOrderIndex(b))
+          .map((servico, index) => ({
+            id: -1 - index,
+            servico,
+            concluido: false,
+            concluido_em: null,
+            isCurrent: false,
+            isFuture: false,
+            elapsedMs: null,
+          }))
         const { itens: servicosParaExibir, tempoTotalCongeladoEm } = temTimer
           ? buildServicoTimeline(servicosStatusEfetivo, iniciadoEmMs, now)
           : { itens: previewServicos, tempoTotalCongeladoEm: null }
@@ -258,7 +259,7 @@ export function ClienteTable({
         // Soma do tempo estipulado de todos os serviços do atendimento — é contra
         // essa soma que o timer grande (regressivo) conta, não por serviço.
         const expectedTotalMs = servicosParaExibir.reduce(
-          (acc, item) => acc + (SERVICE_EXPECTED_MINUTES[item.servico] ?? 20) * 60000,
+          (acc, item) => acc + getStepExpectedMinutes(item.servico) * 60000,
           0,
         )
         const isFinalizado = cliente.status === "finalizado"
@@ -288,6 +289,7 @@ export function ClienteTable({
                       <Phone size={13} />
                       {cliente.telefone}
                     </span>
+                    {cliente.preco_total > 0 && <span>{formatBRL(cliente.preco_total)}</span>}
                   </div>
                 </div>
                 {confirmingId === cliente.id ? (
@@ -373,8 +375,7 @@ export function ClienteTable({
                       if (item.elapsedMs != null) {
                         tempoLabel = formatDuration(item.elapsedMs)
                       } else if (item.isFuture) {
-                        const expectedMinutes = SERVICE_EXPECTED_MINUTES[item.servico] ?? 20
-                        tempoLabel = `~${expectedMinutes}min`
+                        tempoLabel = `~${getStepExpectedMinutes(item.servico)}min`
                       }
 
                       return (

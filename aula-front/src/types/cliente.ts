@@ -16,6 +16,7 @@ export interface Cliente {
   placa: string | null
   cor_carro: string | null
   servicos: string[]
+  preco_total: number
   status: ClienteStatus
   atendimento_ativo_id: number | null
   atendimento_iniciado_em: string | null

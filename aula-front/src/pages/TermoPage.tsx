@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { plans } from "@/data/plans"
+import { formatBRL } from "@/lib/formatCurrency"
 
 interface AtendimentoAberto {
   atendimento_id: number
@@ -14,6 +15,7 @@ interface AtendimentoAberto {
   placa: string | null
   modelo_carro: string
   cor_carro: string | null
+  preco_total: number
 }
 
 export function TermoPage() {
@@ -119,6 +121,7 @@ export function TermoPage() {
                   <strong className="text-brand-ink">Veículo:</strong> {clienteSelecionado.modelo_carro}
                   {clienteSelecionado.cor_carro ? ` · ${clienteSelecionado.cor_carro}` : ""}
                   {clienteSelecionado.placa ? ` · Placa ${clienteSelecionado.placa}` : ""}
+                  {clienteSelecionado.preco_total > 0 ? ` · ${formatBRL(clienteSelecionado.preco_total)}` : ""}
                 </div>
               )}
 
