@@ -427,6 +427,15 @@ export function ClienteTable({
                 >
                   {emAndamento ? "Finalizar atendimento" : "Iniciar atendimento"}
                 </Button>
+                {emAndamento && (bloqueadoPorServicos || bloqueadoPorTermo) && (
+                  <p className="text-center text-[11px] text-brand-ink/50">
+                    {bloqueadoPorServicos && bloqueadoPorTermo
+                      ? "Faltam concluir os serviços e assinar o termo"
+                      : bloqueadoPorServicos
+                        ? "Faltam serviços a concluir"
+                        : "Aguardando o cliente assinar o termo"}
+                  </p>
+                )}
 
                 {tempoGrandeMs != null && (
                   <div
