@@ -47,13 +47,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           {user && (
             <div className="flex items-center gap-4">
-              {user.role === "owner" && (
-                <nav className="flex items-center gap-1">
-                  <NavItem to="/dashboard">Painel</NavItem>
-                  <NavItem to="/atendimentos">Atendimentos</NavItem>
-                  <NavItem to="/usuarios">Usuários</NavItem>
-                </nav>
-              )}
+              <nav className="flex items-center gap-1">
+                <NavItem to="/dashboard">Painel</NavItem>
+                <NavItem to="/atendimentos">Atendimentos</NavItem>
+                {user.role === "owner" && <NavItem to="/usuarios">Usuários</NavItem>}
+              </nav>
               <div className="text-right">
                 <p className="text-sm font-medium text-brand-ink">{user.name}</p>
                 <p className="text-xs text-brand-ink/60">{roleLabel[user.role]}</p>

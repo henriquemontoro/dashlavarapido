@@ -4,6 +4,7 @@ import { api, ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import type { UserRole } from "@/types/auth"
 import type { ManagedUser } from "@/types/managedUser"
@@ -102,9 +103,8 @@ export function UserForm({ user, onSaved, onCancelEdit }: UserFormProps) {
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="password">{isEditing ? "Nova senha" : "Senha"}</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               required={!isEditing}
               placeholder={isEditing ? "Deixe em branco para manter a atual" : undefined}
               value={form.password}

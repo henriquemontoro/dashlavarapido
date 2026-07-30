@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { Cliente } from "@/types/cliente"
 
-const emptyForm = { nome: "", sobrenome: "", telefone: "", modelo_carro: "" }
+const emptyForm = { nome: "", sobrenome: "", telefone: "", modelo_carro: "", placa: "" }
 
 interface ClienteFormProps {
   cliente?: Cliente | null
@@ -28,6 +28,7 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
         sobrenome: cliente.sobrenome,
         telefone: cliente.telefone,
         modelo_carro: cliente.modelo_carro,
+        placa: cliente.placa ?? "",
       })
     }
   }, [cliente])
@@ -109,6 +110,16 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
               required
               value={form.modelo_carro}
               onChange={(event) => setForm({ ...form, modelo_carro: event.target.value })}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="placa">Placa</Label>
+            <Input
+              id="placa"
+              required
+              placeholder="ABC1D23"
+              value={form.placa}
+              onChange={(event) => setForm({ ...form, placa: event.target.value.toUpperCase() })}
             />
           </div>
           <div className="flex gap-2 sm:col-span-2">

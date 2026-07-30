@@ -1,10 +1,12 @@
 import { useState } from "react"
-import { PencilSimple, Trash } from "@phosphor-icons/react"
+import { Images, PencilSimple, Trash } from "@phosphor-icons/react"
 import toast from "react-hot-toast"
 import { api, ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { Cliente } from "@/types/cliente"
+import { PhotoCaptureModal } from "@/components/atendimentos/PhotoCaptureModal"
+import { PhotoViewerModal } from "@/components/atendimentos/PhotoViewerModal"
 
 const statusLabel: Record<Cliente["status"], string> = {
   aguardando: "Aguardando",
@@ -24,32 +26,50 @@ interface ClienteTableProps {
   onEdit: (cliente: Cliente) => void
 }
 
+interface CaptureState {
+  cliente: Cliente
+  mode: "iniciar" | "finalizar"
+}
+
+interface ViewerState {
+  atendimentoId: number
+  momento: "inicio" | "fim"
+  title: string
+}
+
 export function ClienteTable({ clientes, onChange, onEdit }: ClienteTableProps) {
   const [pendingId, setPendingId] = useState<number | null>(null)
   const [confirmingId, setConfirmingId] = useState<number | null>(null)
+  const [captureState, setCaptureState] = useState<CaptureState | null>(null)
+  const [viewerState, setViewerState] = useState<ViewerState | null>(null)
 
-  async function iniciar(cliente: Cliente) {
+  async function handleCaptureConfirm(files: File[]) {
+    if (!captureState) return
+    const { cliente, mode } = captureState
     setPendingId(cliente.id)
     try {
-      await api.post("/atendimentos", { cliente_id: cliente.id })
-      toast.success(`Atendimento iniciado para ${cliente.nome}`)
-      onChange()
-    } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : "Não foi possível iniciar o atendimento")
-    } finally {
-      setPendingId(null)
-    }
-  }
+      const formData = new FormData()
+      files.forEach((file) => formData.append("fotos", file))
 
-  async function finalizar(cliente: Cliente) {
-    if (!cliente.atendimento_ativo_id) return
-    setPendingId(cliente.id)
-    try {
-      await api.post(`/atendimentos/${cliente.atendimento_ativo_id}/finalizar`)
-      toast.success(`Cliente avisado — atendimento de ${cliente.nome} finalizado`)
+      if (mode === "iniciar") {
+        formData.append("cliente_id", String(cliente.id))
+        await api.postForm("/atendimentos", formData)
+        toast.success(`Atendimento iniciado para ${cliente.nome}`)
+      } else {
+        if (!cliente.atendimento_ativo_id) return
+        await api.postForm(`/atendimentos/${cliente.atendimento_ativo_id}/finalizar`, formData)
+        toast.success(`Cliente avisado — atendimento de ${cliente.nome} finalizado`)
+      }
+      setCaptureState(null)
       onChange()
     } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : "Não foi possível finalizar o atendimento")
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : mode === "iniciar"
+            ? "Não foi possível iniciar o atendimento"
+            : "Não foi possível finalizar o atendimento",
+      )
     } finally {
       setPendingId(null)
     }
@@ -85,8 +105,10 @@ export function ClienteTable({ clientes, onChange, onEdit }: ClienteTableProps) 
             <th className="px-4 py-3 font-medium">Cliente</th>
             <th className="px-4 py-3 font-medium">Telefone</th>
             <th className="px-4 py-3 font-medium">Carro</th>
+            <th className="px-4 py-3 font-medium">Placa</th>
             <th className="px-4 py-3 font-medium">Status</th>
             <th className="px-4 py-3 font-medium">Ação</th>
+            <th className="px-4 py-3 font-medium">Fotos</th>
             <th className="px-4 py-3 font-medium" />
           </tr>
         </thead>
@@ -100,6 +122,7 @@ export function ClienteTable({ clientes, onChange, onEdit }: ClienteTableProps) 
                 </td>
                 <td className="px-4 py-3 text-brand-ink/70">{cliente.telefone}</td>
                 <td className="px-4 py-3 text-brand-ink/70">{cliente.modelo_carro}</td>
+                <td className="px-4 py-3 text-brand-ink/70">{cliente.placa ?? "—"}</td>
                 <td className="px-4 py-3">
                   <span className={cn("text-xs font-medium", statusClass[cliente.status])}>
                     {statusLabel[cliente.status]}
@@ -111,10 +134,48 @@ export function ClienteTable({ clientes, onChange, onEdit }: ClienteTableProps) 
                     className="w-fit"
                     variant={emAndamento ? "primary" : "outline"}
                     disabled={pendingId === cliente.id}
-                    onClick={() => (emAndamento ? finalizar(cliente) : iniciar(cliente))}
+                    onClick={() =>
+                      setCaptureState({ cliente, mode: emAndamento ? "finalizar" : "iniciar" })
+                    }
                   >
                     {emAndamento ? "Finalizar atendimento" : "Iniciar atendimento"}
                   </Button>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-col gap-1 whitespace-nowrap">
+                    {cliente.ultimo_atendimento_id != null && cliente.fotos_inicio_count > 0 && (
+                      <button
+                        type="button"
+                        className="flex items-center gap-1 text-xs text-brand-ink/60 hover:text-brand-ink hover:underline"
+                        onClick={() =>
+                          setViewerState({
+                            atendimentoId: cliente.ultimo_atendimento_id as number,
+                            momento: "inicio",
+                            title: `Fotos iniciais — ${cliente.nome}`,
+                          })
+                        }
+                      >
+                        <Images size={14} />
+                        Início ({cliente.fotos_inicio_count})
+                      </button>
+                    )}
+                    {cliente.ultimo_atendimento_id != null && cliente.fotos_fim_count > 0 && (
+                      <button
+                        type="button"
+                        className="flex items-center gap-1 text-xs text-brand-ink/60 hover:text-brand-ink hover:underline"
+                        onClick={() =>
+                          setViewerState({
+                            atendimentoId: cliente.ultimo_atendimento_id as number,
+                            momento: "fim",
+                            title: `Fotos finais — ${cliente.nome}`,
+                          })
+                        }
+                      >
+                        <Images size={14} />
+                        Fim ({cliente.fotos_fim_count})
+                      </button>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3">
                   {confirmingId === cliente.id ? (
@@ -162,6 +223,21 @@ export function ClienteTable({ clientes, onChange, onEdit }: ClienteTableProps) 
           })}
         </tbody>
       </table>
+
+      <PhotoCaptureModal
+        open={captureState !== null}
+        title={captureState?.mode === "finalizar" ? "Fotos do carro — finalização" : "Fotos do carro — início"}
+        onClose={() => setCaptureState(null)}
+        onConfirm={handleCaptureConfirm}
+      />
+
+      <PhotoViewerModal
+        open={viewerState !== null}
+        onClose={() => setViewerState(null)}
+        atendimentoId={viewerState?.atendimentoId ?? null}
+        momento={viewerState?.momento ?? "inicio"}
+        title={viewerState?.title ?? ""}
+      />
     </div>
   )
 }

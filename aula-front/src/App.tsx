@@ -26,10 +26,10 @@ function App() {
           <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<RequireRole roles={["owner"]} />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/usuarios" element={<UsersPage />} />
             </Route>
             <Route element={<RequireRole roles={["owner", "employee"]} />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/atendimentos" element={<AtendimentosPage />} />
             </Route>
           </Route>

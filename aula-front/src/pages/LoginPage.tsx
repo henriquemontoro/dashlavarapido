@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import type { AuthUser } from "@/types/auth"
 
@@ -69,9 +70,8 @@ export function LoginPage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="password">Senha</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete="current-password"
                 required
                 value={password}
@@ -83,6 +83,9 @@ export function LoginPage() {
             </Button>
             <Link to="/redefinir-senha" className="text-center text-xs text-brand-ink/60 hover:text-brand-ink">
               Esqueci minha senha
+            </Link>
+            <Link to="/" className="text-center text-xs text-brand-ink/60 hover:text-brand-ink">
+              ← Voltar ao site institucional
             </Link>
           </form>
         </CardContent>

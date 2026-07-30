@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { MagnifyingGlass } from "@phosphor-icons/react"
 import toast from "react-hot-toast"
 import { AppShell } from "@/components/layout/AppShell"
 import { ClienteForm } from "@/components/atendimentos/ClienteForm"
 import { ClienteTable } from "@/components/atendimentos/ClienteTable"
+import { Input } from "@/components/ui/input"
 import { api, ApiError } from "@/lib/api"
 import type { Cliente } from "@/types/cliente"
 
@@ -10,6 +12,15 @@ export function AtendimentosPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null)
+  const [search, setSearch] = useState("")
+
+  const clientesFiltrados = useMemo(() => {
+    const termo = search.trim().toLowerCase()
+    if (!termo) return clientes
+    return clientes.filter((cliente) =>
+      `${cliente.nome} ${cliente.sobrenome}`.toLowerCase().includes(termo),
+    )
+  }, [clientes, search])
 
   const loadClientes = useCallback(async () => {
     try {
@@ -47,10 +58,23 @@ export function AtendimentosPage() {
           onCancelEdit={() => setEditingCliente(null)}
         />
 
+        <div className="relative w-full max-w-xs">
+          <MagnifyingGlass
+            size={16}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-brand-ink/40"
+          />
+          <Input
+            placeholder="Buscar por nome..."
+            className="pl-9"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </div>
+
         {isLoading ? (
           <p className="text-sm text-brand-ink/50">Carregando clientes...</p>
         ) : (
-          <ClienteTable clientes={clientes} onChange={loadClientes} onEdit={setEditingCliente} />
+          <ClienteTable clientes={clientesFiltrados} onChange={loadClientes} onEdit={setEditingCliente} />
         )}
       </div>
     </AppShell>

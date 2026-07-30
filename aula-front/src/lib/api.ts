@@ -23,10 +23,9 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function authenticatedFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken()
   const headers = new Headers(options.headers)
-  headers.set("Content-Type", "application/json")
   if (token) headers.set("Authorization", `Bearer ${token}`)
 
   const response = await fetch(`${config.apiBaseUrl}${path}`, { ...options, headers })
@@ -36,6 +35,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new ApiError(response.status, body?.detail ?? "Erro inesperado")
   }
 
+  return response
+}
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const headers = new Headers(options.headers)
+  headers.set("Content-Type", "application/json")
+
+  const response = await authenticatedFetch(path, { ...options, headers })
   if (response.status === 204) return undefined as T
   return (await response.json()) as T
 }
@@ -53,4 +60,14 @@ export const api = {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     }),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+  // Multipart: sem Content-Type manual — o navegador define o boundary sozinho.
+  postForm: async <T>(path: string, formData: FormData): Promise<T> => {
+    const response = await authenticatedFetch(path, { method: "POST", body: formData })
+    if (response.status === 204) return undefined as T
+    return (await response.json()) as T
+  },
+  getBlob: async (path: string): Promise<Blob> => {
+    const response = await authenticatedFetch(path, { method: "GET" })
+    return response.blob()
+  },
 }
