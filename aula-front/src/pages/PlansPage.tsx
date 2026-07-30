@@ -18,8 +18,8 @@ export function PlansPage() {
             Assinatura para quem lava sempre
           </h1>
           <p className="mt-3 text-brand-ink/60">
-            Escolha a frequência ideal pro seu carro e pare de se preocupar com agenda. A gente
-            reserva seu horário toda semana.
+            Lavagens Completas e Ceras inclusas todo mês, sem precisar pagar a cada visita. O saldo
+            renova a cada ciclo de 30 dias.
           </p>
         </div>
 
@@ -28,6 +28,12 @@ export function PlansPage() {
             <PlanCard key={plan.name} {...plan} />
           ))}
         </div>
+
+        <p className="mt-6 text-xs text-brand-ink/50">
+          Os planos contemplam apenas Lavagem Completa e Cera. Demais serviços do catálogo
+          (Lavagem Simples, Lavagem de Motor, Polimento e Higienização de Bancos) são sempre
+          cobrados à parte, mesmo para assinantes.
+        </p>
       </section>
 
       <SiteFooter />

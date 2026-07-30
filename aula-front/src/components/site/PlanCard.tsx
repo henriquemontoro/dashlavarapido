@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { WHATSAPP_LINK } from "@/data/contact"
 import type { Plan } from "@/data/plans"
 
-export function PlanCard({ name, price, frequency, features, highlighted }: Plan) {
+export function PlanCard({ name, price, highlighted, servicos }: Plan) {
   return (
     <div
       className={cn(
@@ -30,16 +30,17 @@ export function PlanCard({ name, price, frequency, features, highlighted }: Plan
       <p className={cn("mt-2 font-display text-3xl font-semibold", highlighted ? "text-white" : "text-brand-ink")}>
         {price}
       </p>
-      <p className={cn("mt-1 text-sm", highlighted ? "text-white/70" : "text-brand-ink/60")}>{frequency}</p>
 
       <ul className="mt-6 flex flex-1 flex-col gap-3">
-        {features.map((feature) => (
+        {servicos.map((servico) => (
           <li
-            key={feature}
-            className={cn("flex items-start gap-2 text-sm", highlighted ? "text-white/80" : "text-brand-ink/70")}
+            key={servico.nome}
+            className={cn("flex items-start gap-2 text-sm", highlighted ? "text-white/90" : "text-brand-ink/80")}
           >
-            <CheckCircle size={18} weight="fill" className={highlighted ? "text-brand-cyan" : "text-brand"} />
-            {feature}
+            <CheckCircle size={18} weight="fill" className={cn("shrink-0", highlighted ? "text-brand-cyan" : "text-brand")} />
+            <span>
+              {servico.quantidade}x {servico.nome} por ciclo
+            </span>
           </li>
         ))}
       </ul>

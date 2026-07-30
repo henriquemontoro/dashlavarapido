@@ -1,39 +1,41 @@
-// Conteúdo placeholder — preços e periodicidade a confirmar com o
-// Lava-Rápido Nogueira antes de publicar.
+// Planos de assinatura reais do Lava-Rápido Nogueira (POP-OPE-001). Contemplam
+// exclusivamente Lavagem Completa e Cera — os demais serviços do catálogo
+// nunca entram em nenhum plano, sempre cobrados avulso (nota única na
+// página de planos, não repetida em cada card).
+export interface PlanoServico {
+  nome: string
+  quantidade: number
+}
+
 export interface Plan {
   name: string
   price: string
-  frequency: string
-  features: string[]
   highlighted?: boolean
+  servicos: PlanoServico[]
+}
+
+function montarServicos(lavagensCompletas: number, ceras: number): PlanoServico[] {
+  return [
+    { nome: "Lavagem Completa", quantidade: lavagensCompletas },
+    { nome: "Cera", quantidade: ceras },
+  ]
 }
 
 export const plans: Plan[] = [
   {
-    name: "Essencial",
-    price: "R$ 119/mês",
-    frequency: "1 lavagem simples por semana",
-    features: ["Lavagem externa completa", "Secagem à mão", "Sem taxa de adesão"],
+    name: "Bronze",
+    price: "R$ 129,99/mês",
+    servicos: montarServicos(2, 1),
   },
   {
-    name: "Completo",
-    price: "R$ 219/mês",
-    frequency: "1 lavagem completa por semana",
-    features: [
-      "Lavagem externa e interna",
-      "Aspiração e limpeza de estofados",
-      "1 higienização interna por mês",
-    ],
+    name: "Prata",
+    price: "R$ 229,99/mês",
     highlighted: true,
+    servicos: montarServicos(4, 2),
   },
   {
-    name: "Premium",
-    price: "R$ 349/mês",
-    frequency: "2 lavagens completas por semana",
-    features: [
-      "Tudo do plano Completo",
-      "Enceramento mensal incluso",
-      "Prioridade de horário no balcão",
-    ],
+    name: "Ouro",
+    price: "R$ 259,99/mês",
+    servicos: montarServicos(6, 3),
   },
 ]
