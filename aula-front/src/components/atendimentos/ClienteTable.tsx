@@ -69,6 +69,30 @@ function buildServicoTimeline(servicos: ServicoBase[], iniciadoEmMs: number | nu
   return { itens, tempoTotalCongeladoEm: todosConcluidos ? cursorMs : null }
 }
 
+interface ServicoGrupo {
+  pacote: string
+  itens: { etapa: string | null; item: ServicoTimelineItem }[]
+}
+
+// Etapas de detalhamento chegam do backend como "Pacote · Etapa" (ex.:
+// "Lavagem Simples · Aspiração"). Agrupa por pacote pra mostrar o nome dele
+// uma vez só, não repetido em cada etapa.
+function agruparServicosPorPacote(itens: ServicoTimelineItem[]): ServicoGrupo[] {
+  const grupos: ServicoGrupo[] = []
+  for (const item of itens) {
+    const separadorIndex = item.servico.indexOf(" · ")
+    const pacote = separadorIndex === -1 ? item.servico : item.servico.slice(0, separadorIndex)
+    const etapa = separadorIndex === -1 ? null : item.servico.slice(separadorIndex + 3)
+    const grupoAtual = grupos[grupos.length - 1]
+    if (grupoAtual && grupoAtual.pacote === pacote) {
+      grupoAtual.itens.push({ etapa, item })
+    } else {
+      grupos.push({ pacote, itens: [{ etapa, item }] })
+    }
+  }
+  return grupos
+}
+
 interface ClienteTableProps {
   clientes: Cliente[]
   onChange: () => void
@@ -364,56 +388,65 @@ export function ClienteTable({
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    {servicosParaExibir.map((item) => {
-                      const isClickable = emAndamento && (item.concluido || item.isCurrent)
+                  <div className="flex flex-col gap-3">
+                    {agruparServicosPorPacote(servicosParaExibir).map((grupo) => (
+                      <div key={grupo.pacote} className="flex flex-col gap-1.5">
+                        {grupo.itens.length > 1 && (
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-ink/40">
+                            {grupo.pacote}
+                          </p>
+                        )}
+                        {grupo.itens.map(({ etapa, item }) => {
+                          const isClickable = emAndamento && (item.concluido || item.isCurrent)
 
-                      // Tempo por serviço é só registro: sempre crescente (tempo
-                      // gasto), nunca regressivo e nunca fica vermelho — quem
-                      // estoura ou não é o timer grande, contra a soma total.
-                      let tempoLabel: string | null = null
-                      if (item.elapsedMs != null) {
-                        tempoLabel = formatDuration(item.elapsedMs)
-                      } else if (item.isFuture) {
-                        tempoLabel = `~${getStepExpectedMinutes(item.servico)}min`
-                      }
+                          // Tempo por serviço é só registro: sempre crescente (tempo
+                          // gasto), nunca regressivo e nunca fica vermelho — quem
+                          // estoura ou não é o timer grande, contra a soma total.
+                          let tempoLabel: string | null = null
+                          if (item.elapsedMs != null) {
+                            tempoLabel = formatDuration(item.elapsedMs)
+                          } else if (item.isFuture) {
+                            tempoLabel = `~${getStepExpectedMinutes(item.servico)}min`
+                          }
 
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          disabled={!isClickable || togglingServicoId === item.id}
-                          onClick={() => isClickable && toggleServico(cliente, item as ServicoStatus)}
-                          className={cn(
-                            "flex min-h-11 items-center justify-between gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
-                            item.concluido
-                              ? "border-brand/30 bg-brand/10 text-brand"
-                              : item.isCurrent
-                                ? "border-brand-cyan/50 bg-brand-cyan/10 text-brand-ink"
-                                : "border-brand-line bg-brand-surface/40 text-brand-ink/50",
-                            isClickable && "cursor-pointer hover:border-brand-cyan active:scale-[0.99]",
-                            !isClickable && "cursor-default",
-                          )}
-                        >
-                          <span className="flex items-center gap-2.5">
-                            <span
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              disabled={!isClickable || togglingServicoId === item.id}
+                              onClick={() => isClickable && toggleServico(cliente, item as ServicoStatus)}
                               className={cn(
-                                "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
-                                item.concluido ? "border-brand bg-brand text-white" : "border-brand-ink/30",
+                                "flex min-h-11 items-center justify-between gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
+                                item.concluido
+                                  ? "border-brand/30 bg-brand/10 text-brand"
+                                  : item.isCurrent
+                                    ? "border-brand-cyan/50 bg-brand-cyan/10 text-brand-ink"
+                                    : "border-brand-line bg-brand-surface/40 text-brand-ink/50",
+                                isClickable && "cursor-pointer hover:border-brand-cyan active:scale-[0.99]",
+                                !isClickable && "cursor-default",
                               )}
                             >
-                              {item.concluido && <Check size={12} weight="bold" />}
-                            </span>
-                            {item.servico}
-                          </span>
-                          {tempoLabel != null && (
-                            <span className="shrink-0 font-mono text-xs tabular-nums text-brand-ink/40">
-                              {tempoLabel}
-                            </span>
-                          )}
-                        </button>
-                      )
-                    })}
+                              <span className="flex items-center gap-2.5">
+                                <span
+                                  className={cn(
+                                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
+                                    item.concluido ? "border-brand bg-brand text-white" : "border-brand-ink/30",
+                                  )}
+                                >
+                                  {item.concluido && <Check size={12} weight="bold" />}
+                                </span>
+                                {etapa ?? item.servico}
+                              </span>
+                              {tempoLabel != null && (
+                                <span className="shrink-0 font-mono text-xs tabular-nums text-brand-ink/40">
+                                  {tempoLabel}
+                                </span>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
