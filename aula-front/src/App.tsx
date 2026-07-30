@@ -6,9 +6,11 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { RequireRole } from "@/components/auth/RequireRole"
 import { LoginPage } from "@/pages/LoginPage"
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage"
+import { TermoPage } from "@/pages/TermoPage"
 import { DashboardPage } from "@/pages/DashboardPage"
 import { AtendimentosPage } from "@/pages/AtendimentosPage"
 import { UsersPage } from "@/pages/UsersPage"
+import { TermosPage } from "@/pages/TermosPage"
 import { HomePage } from "@/pages/HomePage"
 import { PlansPage } from "@/pages/PlansPage"
 import { NotFoundPage } from "@/pages/NotFoundPage"
@@ -24,9 +26,11 @@ function App() {
           <Route path="/planos" element={<PlansPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+          <Route path="/termo" element={<TermoPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<RequireRole roles={["owner"]} />}>
               <Route path="/usuarios" element={<UsersPage />} />
+              <Route path="/termos" element={<TermosPage />} />
             </Route>
             <Route element={<RequireRole roles={["owner", "employee"]} />}>
               <Route path="/dashboard" element={<DashboardPage />} />

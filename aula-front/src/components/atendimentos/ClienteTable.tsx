@@ -190,6 +190,7 @@ export function ClienteTable({
         const pendentes = cliente.servicos_status.filter((item) => !item.concluido).length
         const totalServicos = cliente.servicos_status.length
         const bloqueadoPorServicos = emAndamento && pendentes > 0
+        const bloqueadoPorTermo = emAndamento && !cliente.termo_aceito
         const iniciadoEmMs = cliente.atendimento_iniciado_em
           ? parseApiDate(cliente.atendimento_iniciado_em).getTime()
           : null
@@ -272,14 +273,26 @@ export function ClienteTable({
                 </div>
               </div>
 
-              <span
-                className={cn(
-                  "w-fit rounded-full px-2.5 py-1 text-xs font-medium",
-                  statusBadgeClass[cliente.status],
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span
+                  className={cn(
+                    "w-fit rounded-full px-2.5 py-1 text-xs font-medium",
+                    statusBadgeClass[cliente.status],
+                  )}
+                >
+                  {statusLabel[cliente.status]}
+                </span>
+                {emAndamento && (
+                  <span
+                    className={cn(
+                      "w-fit rounded-full px-2 py-0.5 text-[10px] font-medium",
+                      cliente.termo_aceito ? "bg-brand/10 text-brand" : "bg-amber-100 text-amber-700",
+                    )}
+                  >
+                    {cliente.termo_aceito ? "Termo assinado" : "Termo pendente"}
+                  </span>
                 )}
-              >
-                {statusLabel[cliente.status]}
-              </span>
+              </div>
 
               {servicosParaExibir.length > 0 && (
                 <div className="flex flex-col gap-2">
@@ -371,7 +384,7 @@ export function ClienteTable({
                     size="default"
                     className="w-full"
                     variant={emAndamento ? "primary" : "outline"}
-                    disabled={pendingId === cliente.id || bloqueadoPorServicos}
+                    disabled={pendingId === cliente.id || bloqueadoPorServicos || bloqueadoPorTermo}
                     onClick={() => setCaptureState({ cliente, mode: emAndamento ? "finalizar" : "iniciar" })}
                   >
                     {emAndamento ? "Finalizar atendimento" : "Iniciar atendimento"}

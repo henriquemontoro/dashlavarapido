@@ -24,4 +24,5 @@ export interface Cliente {
   fotos_inicio_count: number
   fotos_fim_count: number
   servicos_status: ServicoStatus[]
+  termo_aceito: boolean
 }

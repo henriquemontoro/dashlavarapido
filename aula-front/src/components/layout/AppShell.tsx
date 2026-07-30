@@ -51,6 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <NavItem to="/dashboard">Painel</NavItem>
                 <NavItem to="/atendimentos">Atendimentos</NavItem>
                 {user.role === "owner" && <NavItem to="/usuarios">Usuários</NavItem>}
+                {user.role === "owner" && <NavItem to="/termos">Termos</NavItem>}
               </nav>
               <div className="text-right">
                 <p className="text-sm font-medium text-brand-ink">{user.name}</p>
