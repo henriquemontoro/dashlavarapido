@@ -100,6 +100,27 @@ export function ClienteTable({
   const [viewerState, setViewerState] = useState<ViewerState | null>(null)
   const [togglingServicoId, setTogglingServicoId] = useState<number | null>(null)
   const [now, setNow] = useState(() => Date.now())
+  // Atualização otimista do check de serviço: o PATCH + refetch demoram um
+  // pouco, então marcamos localmente na hora do clique e só "soltamos" o
+  // valor otimista quando o dado real (vindo do refetch) já confirma.
+  const [servicoOverrides, setServicoOverrides] = useState<Record<number, boolean>>({})
+
+  useEffect(() => {
+    setServicoOverrides((prev) => {
+      if (Object.keys(prev).length === 0) return prev
+      const next = { ...prev }
+      let changed = false
+      for (const cliente of clientes) {
+        for (const item of cliente.servicos_status) {
+          if (next[item.id] !== undefined && next[item.id] === item.concluido) {
+            delete next[item.id]
+            changed = true
+          }
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [clientes])
 
   const temAtendimentoAtivo = useMemo(
     () => clientes.some((cliente) => cliente.atendimento_ativo_id !== null),
@@ -147,13 +168,20 @@ export function ClienteTable({
 
   async function toggleServico(cliente: Cliente, item: ServicoStatus) {
     if (!cliente.atendimento_ativo_id) return
+    const novoValor = !item.concluido
+    setServicoOverrides((prev) => ({ ...prev, [item.id]: novoValor }))
     setTogglingServicoId(item.id)
     try {
       await api.patch(`/atendimentos/${cliente.atendimento_ativo_id}/servicos/${item.id}`, {
-        concluido: !item.concluido,
+        concluido: novoValor,
       })
       onChange()
     } catch (error) {
+      setServicoOverrides((prev) => {
+        const next = { ...prev }
+        delete next[item.id]
+        return next
+      })
       toast.error(error instanceof ApiError ? error.message : "Não foi possível atualizar o serviço")
     } finally {
       setTogglingServicoId(null)
@@ -187,8 +215,17 @@ export function ClienteTable({
       {clientes.map((cliente) => {
         const emAndamento = cliente.atendimento_ativo_id !== null
         const isAguardando = cliente.status === "aguardando"
-        const pendentes = cliente.servicos_status.filter((item) => !item.concluido).length
-        const totalServicos = cliente.servicos_status.length
+        const servicosStatusEfetivo = cliente.servicos_status.map((item) =>
+          servicoOverrides[item.id] !== undefined && servicoOverrides[item.id] !== item.concluido
+            ? {
+                ...item,
+                concluido: servicoOverrides[item.id],
+                concluido_em: servicoOverrides[item.id] ? new Date().toISOString() : null,
+              }
+            : item,
+        )
+        const pendentes = servicosStatusEfetivo.filter((item) => !item.concluido).length
+        const totalServicos = servicosStatusEfetivo.length
         const bloqueadoPorServicos = emAndamento && pendentes > 0
         const bloqueadoPorTermo = emAndamento && !cliente.termo_aceito
         const iniciadoEmMs = cliente.atendimento_iniciado_em
@@ -206,7 +243,7 @@ export function ClienteTable({
           elapsedMs: null,
         }))
         const { itens: servicosParaExibir, tempoTotalCongeladoEm } = temTimer
-          ? buildServicoTimeline(cliente.servicos_status, iniciadoEmMs, now)
+          ? buildServicoTimeline(servicosStatusEfetivo, iniciadoEmMs, now)
           : { itens: previewServicos, tempoTotalCongeladoEm: null }
 
         const tempoTotalMs =
