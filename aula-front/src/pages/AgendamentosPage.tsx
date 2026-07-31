@@ -4,6 +4,7 @@ import toast from "react-hot-toast"
 import { AppShell } from "@/components/layout/AppShell"
 import { Input } from "@/components/ui/input"
 import { api, ApiError } from "@/lib/api"
+import { cn } from "@/lib/utils"
 import type { Agendamento } from "@/types/agendamento"
 
 function formatarData(data: string) {
@@ -19,6 +20,8 @@ export function AgendamentosPage() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const [confirmingId, setConfirmingId] = useState<number | null>(null)
+  const [cancelingId, setCancelingId] = useState<number | null>(null)
 
   const loadAgendamentos = useCallback(async (silent = false) => {
     try {
@@ -42,6 +45,20 @@ export function AgendamentosPage() {
     const interval = setInterval(() => loadAgendamentos(true), 15000)
     return () => clearInterval(interval)
   }, [loadAgendamentos])
+
+  const cancelarAgendamento = useCallback(async (agendamento: Agendamento) => {
+    setCancelingId(agendamento.id)
+    try {
+      const atualizado = await api.patch<Agendamento>(`/agendamentos/${agendamento.id}/cancelar`)
+      setAgendamentos((atual) => atual.map((item) => (item.id === atualizado.id ? atualizado : item)))
+      toast.success("Agendamento desmarcado")
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Não foi possível desmarcar o agendamento")
+    } finally {
+      setCancelingId(null)
+      setConfirmingId(null)
+    }
+  }, [])
 
   const agendamentosFiltrados = useMemo(() => {
     const termo = search.trim().toLowerCase()
@@ -90,11 +107,12 @@ export function AgendamentosPage() {
                   <th className="px-4 py-3">Serviços</th>
                   <th className="px-4 py-3">Preço</th>
                   <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-line">
                 {agendamentosFiltrados.map((agendamento) => (
-                  <tr key={agendamento.id}>
+                  <tr key={agendamento.id} className={agendamento.status === "cancelado" ? "opacity-50" : undefined}>
                     <td className="px-4 py-3 whitespace-nowrap">{formatarData(agendamento.data)}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {agendamento.horario_inicio}–{agendamento.horario_fim}
@@ -109,7 +127,48 @@ export function AgendamentosPage() {
                     </td>
                     <td className="px-4 py-3">{agendamento.servicos.join(", ")}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{formatarPreco(agendamento.preco_total)}</td>
-                    <td className="px-4 py-3 capitalize">{agendamento.status}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={cn(
+                          "w-fit rounded-full px-2 py-0.5 text-xs font-medium capitalize",
+                          agendamento.status === "cancelado"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-brand/10 text-brand",
+                        )}
+                      >
+                        {agendamento.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      {agendamento.status === "cancelado" ? null : confirmingId === agendamento.id ? (
+                        <span className="flex items-center justify-end gap-2 text-xs">
+                          <span className="text-brand-ink/60">Desmarcar?</span>
+                          <button
+                            type="button"
+                            disabled={cancelingId === agendamento.id}
+                            className="font-medium text-red-600 hover:underline disabled:opacity-50"
+                            onClick={() => cancelarAgendamento(agendamento)}
+                          >
+                            Confirmar
+                          </button>
+                          <button
+                            type="button"
+                            className="text-brand-ink/60 hover:underline"
+                            onClick={() => setConfirmingId(null)}
+                          >
+                            Cancelar
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          className="text-xs font-medium text-brand-ink/50 hover:text-red-600 hover:underline"
+                          onClick={() => setConfirmingId(agendamento.id)}
+                        >
+                          Desmarcar
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
