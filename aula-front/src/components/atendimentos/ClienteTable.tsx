@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 import { Car, Check, Images, PencilSimple, Phone, Trash } from "@phosphor-icons/react"
 import toast from "react-hot-toast"
 import { api, ApiError } from "@/lib/api"
@@ -388,15 +388,14 @@ export function ClienteTable({
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-1.5">
                     {agruparServicosPorPacote(servicosParaExibir).map((grupo) => (
-                      <div key={grupo.pacote} className="flex flex-col gap-1.5">
+                      <Fragment key={grupo.pacote}>
                         {grupo.itens.length > 1 && (
-                          <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-ink/40">
+                          <p className="col-span-full text-[11px] font-semibold uppercase tracking-wide text-brand-ink/40">
                             {grupo.pacote}
                           </p>
                         )}
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-1.5">
                         {grupo.itens.map(({ etapa, item }) => {
                           const isClickable = emAndamento && (item.concluido || item.isCurrent)
 
@@ -435,7 +434,7 @@ export function ClienteTable({
                               >
                                 {item.concluido && <Check size={12} weight="bold" />}
                               </span>
-                              <span className="min-w-0 flex-1 leading-snug">{etapa ?? item.servico}</span>
+                              <span className="min-w-0 flex-1 leading-snug break-words">{etapa ?? item.servico}</span>
                               {tempoLabel != null && (
                                 <span className="shrink-0 font-mono text-[11px] tabular-nums text-brand-ink/40">
                                   {tempoLabel}
@@ -444,8 +443,7 @@ export function ClienteTable({
                             </button>
                           )
                         })}
-                        </div>
-                      </div>
+                      </Fragment>
                     ))}
                   </div>
                 </div>

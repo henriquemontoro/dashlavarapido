@@ -16,12 +16,15 @@ function formatarPreco(preco: number) {
   return preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 }
 
+type Aba = "confirmados" | "desmarcados"
+
 export function AgendamentosPage() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [confirmingId, setConfirmingId] = useState<number | null>(null)
   const [cancelingId, setCancelingId] = useState<number | null>(null)
+  const [aba, setAba] = useState<Aba>("confirmados")
 
   const loadAgendamentos = useCallback(async (silent = false) => {
     try {
@@ -60,13 +63,23 @@ export function AgendamentosPage() {
     }
   }, [])
 
+  const agendamentosConfirmados = useMemo(
+    () => agendamentos.filter((agendamento) => agendamento.status !== "cancelado"),
+    [agendamentos],
+  )
+  const agendamentosDesmarcados = useMemo(
+    () => agendamentos.filter((agendamento) => agendamento.status === "cancelado"),
+    [agendamentos],
+  )
+
   const agendamentosFiltrados = useMemo(() => {
+    const base = aba === "confirmados" ? agendamentosConfirmados : agendamentosDesmarcados
     const termo = search.trim().toLowerCase()
-    if (!termo) return agendamentos
-    return agendamentos.filter((agendamento) =>
+    if (!termo) return base
+    return base.filter((agendamento) =>
       `${agendamento.nome} ${agendamento.sobrenome} ${agendamento.modelo_carro}`.toLowerCase().includes(termo),
     )
-  }, [agendamentos, search])
+  }, [aba, agendamentosConfirmados, agendamentosDesmarcados, search])
 
   return (
     <AppShell>
@@ -78,23 +91,50 @@ export function AgendamentosPage() {
           </p>
         </div>
 
-        <div className="relative w-full max-w-xs">
-          <MagnifyingGlass
-            size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-brand-ink/40"
-          />
-          <Input
-            placeholder="Buscar por nome ou carro..."
-            className="pl-9"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="inline-flex rounded-md border border-brand-line bg-brand-card p-1">
+            <button
+              type="button"
+              onClick={() => setAba("confirmados")}
+              className={cn(
+                "rounded px-4 py-1.5 text-sm font-medium transition-colors",
+                aba === "confirmados" ? "bg-brand text-white" : "text-brand-ink/70 hover:text-brand-ink",
+              )}
+            >
+              Confirmados ({agendamentosConfirmados.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setAba("desmarcados")}
+              className={cn(
+                "rounded px-4 py-1.5 text-sm font-medium transition-colors",
+                aba === "desmarcados" ? "bg-brand text-white" : "text-brand-ink/70 hover:text-brand-ink",
+              )}
+            >
+              Desmarcados ({agendamentosDesmarcados.length})
+            </button>
+          </div>
+
+          <div className="relative w-full max-w-xs">
+            <MagnifyingGlass
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-brand-ink/40"
+            />
+            <Input
+              placeholder="Buscar por nome ou carro..."
+              className="pl-9"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
         </div>
 
         {isLoading ? (
           <p className="text-sm text-brand-ink/50">Carregando agendamentos...</p>
         ) : agendamentosFiltrados.length === 0 ? (
-          <p className="text-sm text-brand-ink/50">Nenhum agendamento nos próximos dias.</p>
+          <p className="text-sm text-brand-ink/50">
+            {aba === "desmarcados" ? "Nenhum agendamento desmarcado." : "Nenhum agendamento confirmado nos próximos dias."}
+          </p>
         ) : (
           <div className="overflow-x-auto rounded-md border border-brand-line bg-brand-card">
             <table className="w-full text-sm">
@@ -106,13 +146,12 @@ export function AgendamentosPage() {
                   <th className="px-4 py-3">Carro</th>
                   <th className="px-4 py-3">Serviços</th>
                   <th className="px-4 py-3">Preço</th>
-                  <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-line">
                 {agendamentosFiltrados.map((agendamento) => (
-                  <tr key={agendamento.id} className={agendamento.status === "cancelado" ? "opacity-50" : undefined}>
+                  <tr key={agendamento.id}>
                     <td className="px-4 py-3 whitespace-nowrap">{formatarData(agendamento.data)}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {agendamento.horario_inicio}–{agendamento.horario_fim}
@@ -127,18 +166,6 @@ export function AgendamentosPage() {
                     </td>
                     <td className="px-4 py-3">{agendamento.servicos.join(", ")}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{formatarPreco(agendamento.preco_total)}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={cn(
-                          "w-fit rounded-full px-2 py-0.5 text-xs font-medium capitalize",
-                          agendamento.status === "cancelado"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-brand/10 text-brand",
-                        )}
-                      >
-                        {agendamento.status}
-                      </span>
-                    </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       {agendamento.status === "cancelado" ? null : confirmingId === agendamento.id ? (
                         <span className="flex items-center justify-end gap-2 text-xs">
