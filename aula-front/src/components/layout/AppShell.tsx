@@ -50,6 +50,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <nav className="flex items-center gap-1">
                 <NavItem to="/dashboard">Painel</NavItem>
                 <NavItem to="/atendimentos">Atendimentos</NavItem>
+                <NavItem to="/agendamentos">Agenda</NavItem>
                 <NavItem to="/assistente">Assistente</NavItem>
                 {user.role === "owner" && <NavItem to="/usuarios">Usuários</NavItem>}
                 {user.role === "owner" && <NavItem to="/termos">Termos</NavItem>}

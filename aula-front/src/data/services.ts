@@ -9,8 +9,9 @@ import type { ComponentType } from "react"
 // sem detalhamento, o pacote inteiro é uma única etapa.
 export interface ServiceOffering {
   title: string
-  minutes: number
-  price: number
+  // null = sob consulta (escopo variável, orçado e cronometrado na hora)
+  minutes: number | null
+  price: number | null
   detalhamento?: string[]
 }
 
@@ -49,6 +50,7 @@ export const SERVICE_CATALOG: ServiceOffering[] = [
       "Cheirinho",
     ],
   },
+  { title: "Lavagem Detalhada", minutes: null, price: null },
   { title: "Polimento", minutes: 240, price: 500 },
   { title: "Enceramento", minutes: 20, price: 30 },
   { title: "Higienização do Couro", minutes: 120, price: 75 },
@@ -68,6 +70,10 @@ export function getServicePrice(title: string): number {
   return CATALOG_BY_TITLE.get(title)?.price ?? 0
 }
 
+export function isServicoSobConsulta(title: string): boolean {
+  return CATALOG_BY_TITLE.get(title)?.price == null
+}
+
 export function calcularPrecoTotal(servicos: string[]): number {
   return servicos.reduce((total, title) => total + getServicePrice(title), 0)
 }
@@ -78,6 +84,7 @@ export function calcularPrecoTotal(servicos: string[]): number {
 const STEP_EXPECTED_MINUTES: Record<string, number> = (() => {
   const map: Record<string, number> = {}
   for (const service of SERVICE_CATALOG) {
+    if (service.minutes == null) continue
     if (service.detalhamento && service.detalhamento.length > 0) {
       const perStep = Math.max(1, Math.round(service.minutes / service.detalhamento.length))
       for (const passo of service.detalhamento) {
@@ -124,6 +131,13 @@ export const services: Service[] = [
     title: "Lavagem Completa",
     description:
       "Externa e interna: jato de alta pressão, shampoo, enxágue, secagem e sopro de ar, além de lavagem e secagem do tapete, aspiração, pano úmido, limpeza de vidros, pretinho e cheirinho.",
+  },
+  {
+    icon: Sparkle,
+    image: "/services/lavagem-completa.jpg",
+    title: "Lavagem Detalhada",
+    description:
+      "Higienização minuciosa e sob medida, com escopo definido conforme o estado do veículo. Orçada e cronometrada na hora.",
   },
   {
     icon: PaintBrush,

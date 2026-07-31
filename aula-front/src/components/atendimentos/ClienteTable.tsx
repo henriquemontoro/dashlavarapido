@@ -5,7 +5,7 @@ import { api, ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { getServiceOrderIndex, getStepExpectedMinutes } from "@/data/services"
+import { getServiceOrderIndex, getStepExpectedMinutes, isServicoSobConsulta } from "@/data/services"
 import { formatDuration } from "@/lib/formatDuration"
 import { formatBRL } from "@/lib/formatCurrency"
 import { parseApiDate } from "@/lib/parseApiDate"
@@ -234,7 +234,7 @@ export function ClienteTable({
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid items-start gap-4 lg:grid-cols-2">
       {clientes.map((cliente) => {
         const emAndamento = cliente.atendimento_ativo_id !== null
         const isAguardando = cliente.status === "aguardando"
@@ -396,7 +396,7 @@ export function ClienteTable({
                             {grupo.pacote}
                           </p>
                         )}
-                        <div className="grid grid-cols-2 gap-1.5">
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-1.5">
                         {grupo.itens.map(({ etapa, item }) => {
                           const isClickable = emAndamento && (item.concluido || item.isCurrent)
 
@@ -406,7 +406,7 @@ export function ClienteTable({
                           let tempoLabel: string | null = null
                           if (item.elapsedMs != null) {
                             tempoLabel = formatDuration(item.elapsedMs)
-                          } else if (item.isFuture) {
+                          } else if (item.isFuture && !isServicoSobConsulta(item.servico)) {
                             tempoLabel = `~${getStepExpectedMinutes(item.servico)}min`
                           }
 
@@ -417,7 +417,7 @@ export function ClienteTable({
                               disabled={!isClickable || togglingServicoId === item.id}
                               onClick={() => isClickable && toggleServico(cliente, item as ServicoStatus)}
                               className={cn(
-                                "flex min-h-11 items-center justify-between gap-2.5 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
+                                "flex min-h-12 items-start gap-2 rounded-lg border px-2.5 py-2 text-left text-sm transition-colors",
                                 item.concluido
                                   ? "border-brand/30 bg-brand/10 text-brand"
                                   : item.isCurrent
@@ -427,19 +427,17 @@ export function ClienteTable({
                                 !isClickable && "cursor-default",
                               )}
                             >
-                              <span className="flex items-center gap-2.5">
-                                <span
-                                  className={cn(
-                                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
-                                    item.concluido ? "border-brand bg-brand text-white" : "border-brand-ink/30",
-                                  )}
-                                >
-                                  {item.concluido && <Check size={12} weight="bold" />}
-                                </span>
-                                {etapa ?? item.servico}
+                              <span
+                                className={cn(
+                                  "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
+                                  item.concluido ? "border-brand bg-brand text-white" : "border-brand-ink/30",
+                                )}
+                              >
+                                {item.concluido && <Check size={12} weight="bold" />}
                               </span>
+                              <span className="min-w-0 flex-1 leading-snug">{etapa ?? item.servico}</span>
                               {tempoLabel != null && (
-                                <span className="shrink-0 font-mono text-xs tabular-nums text-brand-ink/40">
+                                <span className="shrink-0 font-mono text-[11px] tabular-nums text-brand-ink/40">
                                   {tempoLabel}
                                 </span>
                               )}

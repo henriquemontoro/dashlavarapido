@@ -213,8 +213,16 @@ export function TermoPage() {
                   serviço e cobrar sua assinatura, conforme a LGPD.
                 </p>
                 <p className="italic text-brand-ink/60">
-                  Este resumo não substitui o contrato. As condições completas estão no Termo de Serviço e no
-                  Regulamento Geral de Planos, disponíveis na recepção e na plataforma Portal Nogueira.
+                  Este resumo não substitui o contrato. As condições completas estão no{" "}
+                  <a
+                    href="https://docs.google.com/document/d/13FLCtBhUR2z-koC9P9Pmk391rVR9t5qo/edit?usp=sharing&ouid=101297615371703288759&rtpof=true&sd=true"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="not-italic text-brand underline hover:text-brand-dark"
+                  >
+                    Termo de Serviço
+                  </a>{" "}
+                  e no Regulamento Geral de Planos, disponíveis na recepção e na plataforma Portal Nogueira.
                 </p>
                 <p className="italic text-brand-ink/60">
                   O presente Termo integra-se aos demais documentos da contratação por incorporação por

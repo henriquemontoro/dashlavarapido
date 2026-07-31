@@ -181,7 +181,9 @@ export function ClienteForm({ cliente, onSaved, onCancelEdit }: ClienteFormProps
                   />
                   <span className="flex-1">{service.title}</span>
                   <span className="text-xs text-brand-ink/40">
-                    {service.minutes}min · {formatBRL(service.price)}
+                    {service.minutes != null && service.price != null
+                      ? `${service.minutes}min · ${formatBRL(service.price)}`
+                      : "Sob consulta"}
                   </span>
                 </label>
               ))}

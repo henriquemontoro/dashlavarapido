@@ -8,6 +8,8 @@ function formatMinutes(minutes: number): string {
   return `${minutes}min`
 }
 
+const SOB_CONSULTA = "Sob consulta"
+
 export function ServicesPriceTable() {
   return (
     <section className="mx-auto max-w-4xl px-6 py-20">
@@ -45,14 +47,25 @@ export function ServicesPriceTable() {
             } ${index > 0 ? "border-t border-brand-line" : ""}`}
           >
             <span className="font-medium text-brand-ink">{service.title}</span>
-            <span className="font-mono text-brand-ink/60 tabular-nums">{formatMinutes(service.minutes)}</span>
-            <span className="font-display text-base font-semibold text-brand">{formatBRL(service.price)}</span>
+            <span className="font-mono text-brand-ink/60 tabular-nums">
+              {service.minutes != null ? formatMinutes(service.minutes) : SOB_CONSULTA}
+            </span>
+            <span
+              className={
+                service.price != null
+                  ? "font-display text-base font-semibold text-brand"
+                  : "font-display text-sm font-medium text-brand-ink/50"
+              }
+            >
+              {service.price != null ? formatBRL(service.price) : SOB_CONSULTA}
+            </span>
           </div>
         ))}
       </div>
 
       <p className="mt-4 text-xs text-brand-ink/40">
-        Lavagem Detalhada tem escopo variável, sem preço de tabela — orçada na hora.
+        Serviços "sob consulta" têm escopo variável, avaliado conforme o estado do veículo — tempo e preço são
+        definidos na hora.
       </p>
     </section>
   )

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react"
 import { ArrowUp, Robot, Sparkle, User } from "@phosphor-icons/react"
 import toast from "react-hot-toast"
 import { AppShell } from "@/components/layout/AppShell"
-import { api, ApiError } from "@/lib/api"
+import { config } from "@/config/config"
 import { useAuth } from "@/context/AuthContext"
 import { cn } from "@/lib/utils"
 
@@ -37,12 +37,21 @@ export function AssistentePage() {
     setIsSending(true)
 
     try {
-      const { resposta } = await api.post<{ resposta: string }>("/assistente/chat", {
-        mensagens: novoHistorico,
+      const response = await fetch(config.assistenteWebhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-webhook-secret": config.assistenteWebhookSecret,
+        },
+        body: JSON.stringify({ mensagens: novoHistorico }),
       })
+
+      if (!response.ok) throw new Error()
+
+      const { resposta } = (await response.json()) as { resposta: string }
       setMensagens([...novoHistorico, { role: "assistant", content: resposta }])
-    } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : "Não foi possível falar com o assistente")
+    } catch {
+      toast.error("Não foi possível falar com o assistente")
     } finally {
       setIsSending(false)
     }
